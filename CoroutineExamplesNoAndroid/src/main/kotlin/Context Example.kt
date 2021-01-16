@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 // when a scope create coRoutinues it create context
 // scope creates and manage coRoutinues
 // Context is the set of variable and data associated with the coRoutine
+// Context has Dispatcher and Job
 // dispatcher and job
 
 fun main() {
