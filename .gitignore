@@ -34,3 +34,4 @@ out
 gen
 *.bin
 *.lock
+*.bin
