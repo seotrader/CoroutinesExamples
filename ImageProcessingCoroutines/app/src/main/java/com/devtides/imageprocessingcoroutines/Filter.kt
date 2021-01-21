@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 
 object Filter {
-
+    // converts the image into black and white
     fun apply(source: Bitmap): Bitmap {
         val width = source.width
         val height = source.height
