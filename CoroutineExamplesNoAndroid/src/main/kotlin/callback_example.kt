@@ -1,60 +1,37 @@
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.channels.Channel
 import java.lang.Exception
-import java.lang.Thread.sleep
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
-interface ApiResult {
-    fun success(res: String)
-    fun error(e: String)
-}
+sealed class Result
+data class Success(val result: Int): Result()
+data class Error(val error: Exception): Result()
+object End : Result()
 
+val channel = Channel<Result>()
 fun main() {
+
     val job = runBlocking {
 
         var arrayList = arrayListOf<String>()
+        launch {
+            channel.send(Success(1))
+            channel.send(Success(2))
+            channel.send(Success(2))
+            channel.send(Success(4))
+            channel.send(Error(Exception("This is an error")))
+            channel.send(End)
+
+        }
         launch(Dispatchers.IO) {
-            getResult().collect {
-                arrayList.add(it)
-                withContext(Dispatchers.Default) {
-                    println("Got Value = ${Thread.currentThread()}")
-                    println("Got value from ioThread. value=$it")
+            var ret = channel.receive()
+            while (ret != End) {
+                when (ret) {
+                    is Success -> println("Success = ${ret.result}")
+                    is Error -> println("Error = ${ret.error.message}")
                 }
+                ret = channel.receive()
             }
         }
-
-    }
-}
-
-
-
-fun getResult(): Flow<String> = flow {
-    for (i in 0..10) {
-        sleep(500L)
-        emit(i.toString())
-    }
-}
-
-fun getData(result: ApiResult) {
-    Thread.sleep(1000L)
-    result.success("OK1")
-    result.error("ERROR")
-}
-
-suspend fun getCallBack(): String {
-    return suspendCoroutine {cont->
-        getData(object: ApiResult {
-            override fun success(res: String) {
-                cont.resumeWith(Result.success(res))
-            }
-
-            override fun error(s: String) {
-                cont.resumeWithException(Exception(s))
-            }
-        })
 
     }
 }
